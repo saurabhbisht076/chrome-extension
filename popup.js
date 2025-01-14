@@ -1,24 +1,22 @@
-if(document.querySelector(".popup")){
-const button = document.querySelector(".button")
-const circle = document.querySelector(".circle")
+// popup.js (sending a message to background.js)
 
-let buttonOn = false;
+document.getElementById('askButton').addEventListener('click', async () => {
+    const question = document.getElementById('questionInput').value;
+    const responseContainer = document.getElementById('responseContainer');
+    
+    // Clear previous responses and show loading message
+    responseContainer.innerHTML = 'Loading...';
 
-button.addEventListener("click", ()=>{
-    if(!buttonOn){
-        buttonOn = true;
-        circle.style.animation = "moveCircleRight 1s forwards";
-        button.style.animation = "transformToYellow 1s forwards";
-        chrome.tabs.executeScript({
-            file: "appOn.js"
-        })
-    } else{
-        buttonOn = false;
-        circle.style.animation = "moveCircleLeft 1s forwards";
-        button.style.animation = "transformToBlue 1s forwards";
-        chrome.tabs.executeScript({
-            file: "appOff.js"
-        })
-    }
-})
-}
+    // Send a message to the background.js to get the AI hint
+    chrome.runtime.sendMessage(
+        { action: 'getHint', problem: question },
+        (response) => {
+            if (response && response.hint) {
+                // Display the hint returned from background.js
+                responseContainer.innerHTML = response.hint;
+            } else {
+                responseContainer.innerHTML = 'No hint found.';
+            }
+        }
+    );
+});
